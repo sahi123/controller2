@@ -26,12 +26,16 @@ class SampleController {
 
 
     def intBinding(Integer intParam, String stringParam) {
-        //http://localhost:8080/sample/intBinding?intParam=20&stringParam=Sahi
+
+        //http://localhost:8181/sample/intBinding?intParam=20&stringParam=Sahi
         Person person = new Person(name: stringParam, age: intParam)
 //		params.date("dob", "dd-MM-yyyy")
 //		println "person1.validate()>>>>>"+person1.validate()
 //		Person person1 = new Person(params)
+        render params
+        render "<br>"
         render intParam
+        render "<br>"
         render stringParam
         render "<br>"
         render person
@@ -39,7 +43,7 @@ class SampleController {
 
 //	//autoBinding
 //	def autoBinding() {
-//        //http://localhost:8080/sample/autoBinding?intParam=20&stringParam=Sahi&dateParam=20-07-2019
+//        //http://localhost:8181/sample/autoBinding?intParam=20&stringParam=Sahi&dateParam=20-07-2019
 //        render params.intParam
 //		render params.stringParam
 //		render params.dateParam
@@ -47,12 +51,16 @@ class SampleController {
 
     //params magic
     def paramsConversion() {
-//        http://localhost:8080/sample/paramsConversion?age=20&dob=20-Jan-2019&name=Prashant
+//        http://localhost:8181/sample/paramsConversion?age=20&dob=20-Jan-2019&name=Prashant
         Integer age = params.int("age")
         String name = params.name
         Date dob = params.date("dob", "dd-MMM-yyyy")
         Person person = new Person(name: name, age: age, dob: dob)
 
+//        params.dob = params.date("dob", "dd-MMM-yyyy")
+//        Person person1 = new Person(params)
+//        render "person1>>>>>>>>>>$person1"
+        render "<br>"
         render name
         render age
         render dob ?: "Date is not in proper format"
@@ -61,13 +69,13 @@ class SampleController {
     }
 
     def fetchList() {
-//        http://localhost:8080/sample/fetchList?items=elem1&items=elem2&items=elem3
+//        http://localhost:8181/sample/fetchList?items=elem1&items=elem2&items=elem3
         List list = params.list("items")
         render list
 
     }
 
-    //http://localhost:8080/sample/dataBindWithErrors?name=Sahi&employeeId=Rx-2&location=pune&age=0&dept=2&dob=15-Aug-1991
+    //http://localhost:8181/sample/dataBindWithErrors?name=Sahi&employeeId=Rx-2&location=pune&age=0&dept=2&dob=15-Aug-1991
     def dataBindWithErrors() {
         println "------------------------------------ " + params
 //        params.date("dob", "dd-MM-yyyy")
@@ -79,33 +87,41 @@ class SampleController {
             println it
         }
         println "b.errors.hasFieldErrors()>>>>" + b.errors.hasFieldErrors()
-        println "b.errors.getFieldErrors()>>>>" + b.errors.getFieldErrors()
-        println "b.errors.getFieldError('dob')>>>>" + b.errors.getFieldError("dob")
+        println "b.errors.getFieldErrors()>>>>"
+        b.errors.getFieldErrors().each{
+            println it
+        }
+        println "b.errors.getFieldError('dob')>>>>" + b.errors.getFieldError("employeeId")
+
 //        println "b.errors.getFieldError()>>>>" + b.errors.getFieldError("dept")
         if (b.hasErrors()) {
-            println "The value ${b.errors.getFieldError('dob')}"
-            if (b.errors.hasFieldErrors("dob")) {
-                println b.errors.getFieldError("dob").rejectedValue
+            println "The value ${b.errors.getFieldError('employeeId')}"
+            if (b.errors.hasFieldErrors("employeeId")) {
+                println b.errors.getFieldError("employeeId").rejectedValue
             }
         }
 
         render b.properties
     }
 
-//        http://localhost:8080/sample/signleEndedAssociation?dept.id=1
+//        http://localhost:8181/sample/signleEndedAssociation?dept.id=1
     def signleEndedAssociation() {
         def b = new Employee(params)
         render b.properties
     }
 
-    //http://localhost:8080/sample/multipleDomainBinding?dept.id=1&emp.name=Sahi&emp.age=25
+    //http://localhost:8181/sample/multipleDomainBinding?dept.id=5&dept.name=HR&emp.name=Sahi&emp.age=25
     def multipleDomainBinding() {
         def b = new Employee(params)
         b.properties = params['emp']
+        render "dept>>>>${params['dept']}"
+        render "<br>"
+        render "emp>>>>${params['emp']}"
+        render "<br>"
         render b.properties
     }
 
-    //http://localhost:8080/sample/usingCO?name=Sahi&employeeId=Rx-2&location=pune&age=2&dept=2
+    //http://localhost:8181/sample/usingCO?name=Sahi&employeeId=Rx-2&location=pune&age=2&dept.id=2
     def usingCO(EmployeeCO employeeCO) {
         println employeeCO.properties
         Employee employee = new Employee(employeeCO.properties)
@@ -128,9 +144,10 @@ class SampleController {
 
     def gFileUpload() {
         MultipartFile myFile = params.myFile
-        File file = new File("/Users/prashantsahi/Downloads/image/${myFile.originalFilename}")
-//		render file.text
-        render file.size()
+        File file = new File("/home/prashant/Downloads/${myFile.originalFilename}")
+		render file.text
+        render "<br>"
+        render "File size : ${file.size()/1024} bytes"
 //		render "<br>"
 //		render myFile.inputStream.text
         render "<br>"
@@ -140,9 +157,10 @@ class SampleController {
     }
 
     def download() {
-        File file = new File("/Users/prashantsahi/Downloads/image/dummy_user.jpg")
+        File file = new File("/home/prashant/Downloads/dummy_user.jpeg")
         byte[] orderPDF = file.getBytes()
-        response.setHeader("Content-disposition", "attachment; filename=" + file.name)
+        response.setHeader("Content-disposition", "attachment; filename=" + file.name) // To download on the local system
+//        response.setHeader("Content-disposition", "inline; filename=" + file.name) // To open the file in the browser.
         response.contentLength = orderPDF.length
         response.outputStream << orderPDF
     }

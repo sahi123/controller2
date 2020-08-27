@@ -199,3 +199,6 @@ grails:
         upload:
             maxFileSize: 5000000  # Set maxsize to 5MB
             maxRequestSize: 5000000
+
+server:
+    port: 8181
